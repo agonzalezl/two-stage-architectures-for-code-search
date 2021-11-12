@@ -5,7 +5,7 @@ import pathlib
 import transformers
 import tensorflow as tf
 
-from .search_models.mono_bert_model import MonoBERT_SearchModel
+from .search_models.mono_bert_search_model import MonoBERT_SearchModel
 from .search_models import models
 from . import data_generator
 from . import helper
@@ -107,5 +107,4 @@ if __name__ == "__main__":
     ds = data_generator.get_dcs_dataset(data_path + "test.desc.h5", data_path + "test.tokens.h5",
                                         vocab_desc, vocab_code, max_len=-1).batch(100, drop_remainder=True)
 
-    print("Test 500")
     monobert.test(ds, "results/monobert", 100)

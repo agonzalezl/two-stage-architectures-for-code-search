@@ -20,11 +20,11 @@ class SBERT_DCS(SentenceBERT_SearchModel):
         self.training_model, self.model_code, self.model_query, self.dot_model = models.sentence_bert_model(self.bert_layer, self.max_len)
 
     def generate_tokenizer(self):
-        self.tokenizer = transformers.RobertaTokenizer.from_pretrained('roberta-base', do_lower_case=True)
+        self.tokenizer = transformers.BertTokenizer.from_pretrained('bert-base-uncased', do_lower_case=True)
         return self.tokenizer
 
     def generate_bert_layer(self):
-        self.bert_layer = transformers.TFRobertaModel.from_pretrained('roberta-base')
+        self.bert_layer = transformers.TFBertModel.from_pretrained('bert-base-uncased')
         return self.bert_layer
 
     def get_vocabularies(self):
@@ -94,7 +94,7 @@ if __name__ == "__main__":
 
     #unif.train(ds, script_path + "/../weights/unif-weights", epochs=1, steps_per_epoch=steps_per_epoch)
 
-    sbert.load_weights(script_path+"/../kth_w/sroberta_600k_00002_m20_dcs_weights")
+    sbert.load_weights(script_path+ "/../weights/sbert_600k_00002_m20_dcs_weights")
 
     test_ds = sbert.load_dataset(data_path+"/test.desc.h5", data_path+"/test.tokens.h5", vocab_desc, vocab_code, 100)
 

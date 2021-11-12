@@ -14,7 +14,7 @@ class UNIF_DCS(Sentence_SearchModel):
         self.data_path = data_path
 
         # dataset info
-        self.total_length = 18223872
+        self.total_length = data_generator.DCS_NUM_ELEMENTS
         self.chunk_size = 600000   # 18223872  # 10000
 
         self.max_length = 90
@@ -36,13 +36,7 @@ class UNIF_DCS(Sentence_SearchModel):
         self.hinge_loss_margin = 0.40
 
     def get_vocabularies(self):
-        self.inverse_vocab_code = helper.load_pickle(self.data_path + "vocab.tokens.pkl")
-        self.vocab_code = {y: x for x, y in self.inverse_vocab_code.items()}
-
-        self.inverse_vocab_desc = helper.load_pickle(self.data_path + "vocab.desc.pkl")
-        self.vocab_desc = {y: x for x, y in self.inverse_vocab_desc.items()}
-
-        return self.vocab_code, self.vocab_desc
+        return self.load_vocabulary(self.data_path + "vocab.tokens.pkl", self.data_path + "vocab.desc.pkl")
 
     def get_model(self):
         self.training_model, self.model_code, self.model_query, self.dot_model = models.unif_model(

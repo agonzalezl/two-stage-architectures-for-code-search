@@ -45,25 +45,26 @@ class Sentence_SearchModel(CodeSearchManager):
 
         return embedded_desc, embedded_tokens
 
-
+    # Calculate similarities between embedded_desc[rowid] and embedded_tokens
+    # Return the rank of embedded_tokens[rowid] in that similarity list
     def get_id_rank(self, rowid, embedded_tokens, embedded_desc):
+        return self.get_id_position(rowid, self.get_candidates_ranked(rowid, embedded_tokens, embedded_desc))
 
-        # Get the similarity with the ground truth
-        expected_best_result = \
-        self.dot_model.predict([embedded_tokens[rowid].reshape((1, -1)), embedded_desc[rowid].reshape((1, -1))])[0][0]
+    # Calculate similarities between embedded_desc[rowid] and embedded_tokens
+    # Return the ids ordered by similarity
+    def get_candidates_ranked(self, rowid, embedded_tokens, embedded_desc):
 
-        # Now we compare this desc with the rest of the code snippets
-        # Remove this description row from the list of code embeddings
-        deleted_tokens = np.delete(embedded_tokens, rowid, 0)
+        # Create array same length as the rest of code embeddings only containing target description
+        tiled_desc = np.tile(embedded_desc[rowid], (embedded_tokens.shape[0], 1))
 
-        # Create array same length as the rest of code embeddings only containing this description
-        tiled_desc = np.tile(embedded_desc[rowid], (deleted_tokens.shape[0], 1))
+        similarities = self.dot_model.predict([embedded_tokens, tiled_desc], batch_size=32 * 4)
 
-        # Similarity between this description and the rest of code embeddings
-        prediction = self.dot_model.predict([deleted_tokens, tiled_desc], batch_size=32 * 4)
+        similarities = similarities.reshape((-1))
+        return similarities.argsort()[::-1]
 
-        return len(prediction[prediction >= expected_best_result])
-
+    # Get the position of target_id in candidates_ordered
+    def get_id_position(self, target_id, candidates_ordered):
+        return np.where(candidates_ordered == target_id)[0][0]
 
     def test_embedded(self, embedded_tokens, embedded_desc, results_path):
 
@@ -71,7 +72,6 @@ class Sentence_SearchModel(CodeSearchManager):
         pbar = tqdm(total=len(embedded_desc))
 
         for rowid, desc in enumerate(embedded_desc):
-
             results[rowid] = self.get_id_rank(rowid, embedded_tokens, embedded_desc)
 
             pbar.update(1)
